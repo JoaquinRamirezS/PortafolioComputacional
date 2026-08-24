@@ -225,3 +225,100 @@ def Steffensen(f,x0,tol,maxIter):
         conv = 0
 
     return xk,er_k,k,conv
+
+##############################################################################
+# Método 4: Müller
+##############################################################################
+
+def Muller(f, x0, x1, x2, tol, maxIter):
+    """
+    Esta función permite aproximar la solución de ecuaciones no lineales 
+    aplicando el método de Müller.
+
+    Parámetros
+    ----------
+    f : string 
+        Función ingresada en formato texto.
+    x0 : float
+        Primer valor inicial
+    x1 : float
+        Segundo valor inicial
+    x2 : float
+        Tercer valor inicial
+    tol: float
+        Tolerancia
+    maxIter: integer
+        Número máximo de iteraciones
+
+    Retorna
+    -------
+    xk : float
+        Aproximación obtenida
+    er_k : float
+        Error correspondiente a la última iteración realizada
+    k : integer
+        Número de iteraciones ejecutadas
+    conv : integer
+        Variable que indique si el método alcanzó la tolerancia solicitada antes de
+        llegar al número máximo de iteraciones
+    """
+    # Definir x como simbólica
+    x = sp.Symbol('x')
+
+    # Conversión de función: Texto a simbólico
+    f_sym = sp.sympify(f)
+
+    # Inicialización del conteo de las iteraciones
+    k = 0
+
+    # Evaluar f_sym con los tres valores iniciales
+    f_x0 = f_sym.subs(x, x0).evalf()
+    f_x1 = f_sym.subs(x, x1).evalf()
+    f_x2 = f_sym.subs(x, x2).evalf()
+
+    # Definición inicial de xk y error
+    xk = x2
+    er_k = abs(f_x2)
+
+    # Condición de iteración
+    while k < maxIter and er_k > tol:
+        denom = (x0 - x1) * (x0 - x2) * (x1 - x2)
+        if denom == 0:
+            print("El denominador se hizo 0. No se puede continuar")
+            break
+
+        # Cálculo de los coeficientes de la parábola p(x) = a(x-x2)^2 + b(x-x2) + c
+        c = f_x2
+        b = ((x0 - x2)**2 * (f_x1 - f_x2) - (x1 - x2)**2 * (f_x0 - f_x2)) / denom
+        a = ((x1 - x2) * (f_x0 - f_x2) - (x0 - x2) * (f_x1 - f_x2)) / denom
+
+        disc = b**2 - 4 * a * c
+        
+        # Signo de b para maximizar el denominador en la fórmula cuadrática
+        sgn_b = 1 if float(sp.re(b)) >= 0 else -1
+
+        den_rad = b + sgn_b * sp.sqrt(disc)
+        if den_rad == 0:
+            print("El denominador del radical se hizo 0. No se puede continuar")
+            break
+
+        k += 1 # Aumento de k
+        
+        # Actualización de la aproximación usando la fórmula cuadrática racionalizada
+        xk = x2 - (2 * c) / den_rad
+        xk = xk.evalf()
+
+        # Actualización de los valores iniciales para la siguiente iteración
+        x0, x1, x2 = x1, x2, xk
+        f_x0, f_x1 = f_x1, f_x2
+        f_x2 = f_sym.subs(x, x2).evalf()
+        
+        er_k = abs(f_x2) # Actualización de error
+
+    # Condición de convergencia
+    if er_k <= tol:
+        conv = 1
+    else:
+        conv = 0
+
+    return xk, er_k, k, conv
