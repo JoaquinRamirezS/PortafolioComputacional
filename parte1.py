@@ -322,3 +322,91 @@ def Muller(f, x0, x1, x2, tol, maxIter):
         conv = 0
 
     return xk, er_k, k, conv
+
+##############################################################################
+# Método 5: Bisección
+##############################################################################
+
+def Biseccion(f, a, b, tol, maxIter):
+    """
+    Esta función permite aproximar la solución de ecuaciones no lineales 
+    aplicando el método de la Bisección.
+
+    Parámetros
+    ----------
+    f : string 
+        Función ingresada en formato texto.
+    a : float
+        Límite inferior del intervalo [a, b]
+    b : float
+        Límite superior del intervalo [a, b]
+    tol: float
+        Tolerancia
+    maxIter: integer
+        Número máximo de iteraciones
+
+    Retorna
+    -------
+    xk : float
+        Aproximación obtenida
+    er_k : float
+        Error correspondiente a la última iteración realizada
+    k : integer
+        Número de iteraciones ejecutadas
+    conv : integer
+        Variable que indique si el método alcanzó la tolerancia solicitada antes de
+        llegar al número máximo de iteraciones
+    """
+    # Definir x como simbólica
+    x = sp.Symbol('x')
+
+    # Conversión de función: Texto a simbólico
+    f_sym = sp.sympify(f)
+
+    # Evaluar la función en los extremos del intervalo
+    f_a = f_sym.subs(x, a).evalf()
+    f_b = f_sym.subs(x, b).evalf()
+
+    # Verificar si alguna de las fronteras ya es raíz
+    if f_a == 0:
+        return float(a), 0.0, 0, 1
+    if f_b == 0:
+        return float(b), 0.0, 0, 1
+
+    # Verificar condición de cambio de signo (Teorema de Bolzano)
+    if f_a * f_b > 0:
+        print("El intervalo [a, b] no cumple la condición de cambio de signo f(a)*f(b) < 0.")
+        return None, None, 0, 0
+
+    # Inicialización del conteo de las iteraciones
+    k = 0
+    xk = (a + b) / 2.0
+    f_xk = f_sym.subs(x, xk).evalf()
+    er_k = abs(f_xk)
+
+    # Condición de iteración
+    while k < maxIter and er_k > tol:
+        k += 1 # Aumento de k
+        xk = (a + b) / 2.0 # Punto medio del intervalo
+        f_xk = f_sym.subs(x, xk).evalf() # Evaluación de f en xk
+        er_k = abs(f_xk) # Actualización de error
+
+        # Condición de parada temprana si ya cumple la tolerancia
+        if er_k <= tol:
+            break
+
+        # Selección del subintervalo que conserva el cambio de signo
+        if f_a * f_xk < 0:
+            b = xk
+            f_b = f_xk
+        else:
+            a = xk
+            f_a = f_xk
+
+    # Condición de convergencia
+    if er_k <= tol:
+        conv = 1
+    else:
+        conv = 0
+
+    return xk, er_k, k, conv
