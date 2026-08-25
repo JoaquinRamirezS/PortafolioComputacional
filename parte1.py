@@ -233,7 +233,7 @@ def Steffensen(f,x0,tol,maxIter):
 def Muller(f, x0, x1, x2, tol, maxIter):
     """
     Esta función permite aproximar la solución de ecuaciones no lineales 
-    aplicando el método de Müller.
+    aplicando el método de Müller estrictamente como se especifica en el documento.
 
     Parámetros
     ----------
@@ -259,8 +259,7 @@ def Muller(f, x0, x1, x2, tol, maxIter):
     k : integer
         Número de iteraciones ejecutadas
     conv : integer
-        Variable que indique si el método alcanzó la tolerancia solicitada antes de
-        llegar al número máximo de iteraciones
+        Variable que indica si el método alcanzó la tolerancia solicitada
     """
     # Definir x como simbólica
     x = sp.Symbol('x')
@@ -284,36 +283,40 @@ def Muller(f, x0, x1, x2, tol, maxIter):
     while k < maxIter and er_k > tol:
         denom = (x0 - x1) * (x0 - x2) * (x1 - x2)
         if denom == 0:
-            print("El denominador se hizo 0. No se puede continuar")
+            print("El denominador se hizo 0. No se puede continuar.")
             break
 
-        # Cálculo de los coeficientes de la parábola p(x) = a(x-x2)^2 + b(x-x2) + c
+        # Coeficientes a, b y c del polinomio p(x) = a(x-x2)^2 + b(x-x2) + c
         c = f_x2
         b = ((x0 - x2)**2 * (f_x1 - f_x2) - (x1 - x2)**2 * (f_x0 - f_x2)) / denom
         a = ((x1 - x2) * (f_x0 - f_x2) - (x0 - x2) * (f_x1 - f_x2)) / denom
 
         disc = b**2 - 4 * a * c
         
-        # Signo de b para maximizar el denominador en la fórmula cuadrática
+        # Signo de b
         sgn_b = 1 if float(sp.re(b)) >= 0 else -1
 
         den_rad = b + sgn_b * sp.sqrt(disc)
         if den_rad == 0:
-            print("El denominador del radical se hizo 0. No se puede continuar")
+            print("El denominador del radical se hizo 0. No se puede continuar.")
             break
 
         k += 1 # Aumento de k
         
-        # Actualización de la aproximación usando la fórmula cuadrática racionalizada
+        # Actualización de la aproximación r usando la fórmula cuadrática racionalizada
         xk = x2 - (2 * c) / den_rad
         xk = xk.evalf()
 
-        # Actualización de los valores iniciales para la siguiente iteración
-        x0, x1, x2 = x1, x2, xk
-        f_x0, f_x1 = f_x1, f_x2
+        # Selección de los dos puntos más cercanos a xk de entre {x0, x1, x2}
+        puntos = [(x0, f_x0), (x1, f_x1), (x2, f_x2)]
+        puntos_ordenados = sorted(puntos, key=lambda p: abs(p[0] - xk))
+
+        # Asignación de los dos más cercanos como x0 y x1, y xk como el nuevo x2
+        (x0, f_x0), (x1, f_x1) = puntos_ordenados[0], puntos_ordenados[1]
+        x2 = xk
         f_x2 = f_sym.subs(x, x2).evalf()
         
-        er_k = abs(f_x2) # Actualización de error
+        er_k = abs(f_x2) # Actualización del error
 
     # Condición de convergencia
     if er_k <= tol:
