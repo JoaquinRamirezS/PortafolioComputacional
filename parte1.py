@@ -416,7 +416,7 @@ def Biseccion(f, a, b, tol, maxIter):
 def Falsa_Posicion(f, a, b, tol, maxIter):
     """
     Esta función permite aproximar la solución de ecuaciones no lineales 
-    aplicando el método de la Falsa Posición (Regula Falsi).
+    aplicando el método de la Falsa Posición.
 
     Parámetros
     ----------
@@ -453,32 +453,32 @@ def Falsa_Posicion(f, a, b, tol, maxIter):
     f_a = f_sym.subs(x, a).evalf()
     f_b = f_sym.subs(x, b).evalf()
 
-    # Verificar si alguna de las fronteras ya es raíz
-    if f_a == 0:
-        return float(a), 0.0, 0, 1
-    if f_b == 0:
-        return float(b), 0.0, 0, 1
+    # Paso P1: Verificar si alguna de las fronteras ya es raíz
+    if f_a * f_b == 0:
+        if f_a == 0:
+            return float(a), 0.0, 0, 1
+        else:
+            return float(b), 0.0, 0, 1
 
-    # Verificar condición de cambio de signo (Teorema de Bolzano)
+    # Paso P2: Verificar condición de cambio de signo (Teorema de Bolzano)
     if f_a * f_b > 0:
-        print("El intervalo [a, b] no cumple la condición de cambio de signo f(a)*f(b) < 0.")
+        print("No se garantiza la convergencia.")
         return None, None, 0, 0
 
-    # Inicialización del conteo de las iteraciones
-    k = 0
-    
-    if (f_b - f_a) == 0:
-        print("El denominador se hizo 0. No se puede continuar")
-        return None, None, 0, 0
+    # Inicialización de variables para el Paso P3
+    conv = 0
+    xk = None
+    er_k = None
 
-    # Primera aproximación por interpolación lineal (secante)
-    xk = b - (f_b * (b - a)) / (f_b - f_a)
-    f_xk = f_sym.subs(x, xk).evalf()
-    er_k = abs(f_xk)
+    # Paso P3: Ciclo para realizar las iteraciones de Falsa Posición
+    for k in range(1, maxIter + 1):
+        if (f_b - f_a) == 0:
+            print("El denominador se hizo 0. No se puede continuar.")
+            break
 
-    # Condición de iteración
-    while k < maxIter and er_k > tol:
-        k += 1 # Aumento de k
+        # Cálculo de la aproximación por interpolación lineal (recta secante)
+        xk = b - (f_b * (b - a)) / (f_b - f_a)
+        f_xk = f_sym.subs(x, xk).evalf()
 
         # Selección del subintervalo que conserva el cambio de signo
         if f_a * f_xk < 0:
@@ -488,18 +488,12 @@ def Falsa_Posicion(f, a, b, tol, maxIter):
             a = xk
             f_a = f_xk
 
-        if (f_b - f_a) == 0:
-            print("El denominador se hizo 0. No se puede continuar")
-            break
-
-        xk = b - (f_b * (b - a)) / (f_b - f_a)
-        f_xk = f_sym.subs(x, xk).evalf()
         er_k = abs(f_xk) # Actualización de error
 
-    # Condición de convergencia
-    if er_k <= tol:
-        conv = 1
-    else:
-        conv = 0
+        # Condición de parada temprana si cumple la tolerancia
+        if er_k < tol:
+            conv = 1
+            return float(xk), float(er_k), k, conv
 
-    return xk, er_k, k, conv
+    # Condición de finalización si llega a maxIter sin converger
+    return float(xk), float(er_k), maxIter, conv
