@@ -158,4 +158,48 @@ plt.xticks(rotation=45)
 plt.subplots_adjust(wspace=0.8)
 
 plt.tight_layout()
+#----------------------------------------------------------------------------------------
+# Análisis comparativo de los resultados
+#----------------------------------------------------------------------------------------
+print("\n")
+print("="*100)
+print("Análisis comparativo de los resultados.")
+print("="*100)
+print("""
+Verificando los resultados de la tabla comparativa y las gráficas, todos los métodos convergieron 
+exitosamente.Arrojaron resultados cercanos a la raíz aproximada y los errores se encuentran por debajo de 
+la tolerancia exigida.Esto indica que los seis métodos lograron encontrar una aproximación suficientemente 
+precisa de la misma raíz.Aunque los valores xk presentan ligeras diferencias, las cuales se deben a la forma 
+en que cada algoritmo realiza sus aproximaciones.
+
+Newton-Raphson obtuvo el error más pequeño (1.11x10⁻¹⁵), lo que indica que la aproximación fue muy 
+cercana a la solución.El método Müller también obtuvo un error bastante pequeño aproximadamente(1.20x10⁻¹¹).
+Por otro lado, Secante,Steffensen,Bisección y Falsa-Posición terminaron con errores por debajo de la tolerancia, 
+lo cual es acertado.Aunque se haya obtenido mayor precisión en algunas ejecuciones, no indica que las otras estén 
+incorrectas, puesto que,todas cumplieron con el criterio de convergencia solicitado.
+
+En tiempos de ejecución Müller es el más rápido(0.1249 s), seguido de Secante(0.1826 s) y Falsa-Posición (0.2527 s).
+El método Newton-Raphson es más lento(0.3022 s), así como Steffensen(0.3470 s).En el caso de Newton-Raphson, esto 
+se relaciona con el cálculo de la derivada  y las evaluaciones de la función, mientras que Steffensen realiza 
+evaluaciones adicionales de la función en cada iteración. Aunque el más lento de todos es Bisección(0.7033 s), 
+causado por la cantidad de iteraciones y evaluaciones de función que debe realizar.
+
+En términos de iteraciones, los métodos Müller (3 iteraciones), Newton-Raphson (4 iteraciones), Secante 
+(5 iteraciones) y Steffensen (5 iteraciones)  convergieron con un número bajo de iteraciones.Por su parte, 
+Falsa-Posición necesitó 10 iteraciones,mientras que Bisección necesitó el número más alto, con 28 iteraciones.
+
+La diferencia en los resultados se debe a las características propias de cada método, Müller utiliza tres 
+puntos para construir una aproximación cuadrática de la función,lo que permitió una aproximación de la raíz 
+rápidamente.Newton-Raphson utiliza la derivada de la función y al comenzar cerca de la raíz puede presentar 
+una convergencia rápida.Por su parte, Secante utiliza dos puntos para aproximar la pendiente sin calcular 
+directamente la derivada, mientras que Steffensen utiliza evaluaciones adicionales de la función para mejorar
+la aproximación.Por otro lado, en Bisección cada iteración reduce el intervalo de búsqueda a la mitad y mantiene
+un intervalo donde existe un cambio de signo, lo que ocasiona que necesite más iteraciones para alcanzar la 
+tolerancia.En Falsa Posición se utiliza la interpolación lineal para obtener la siguiente aproximación, lo que se 
+traduce en menos iteraciones.
+
+""")
+
+print("="*100)
+
 plt.show()
