@@ -16,6 +16,7 @@ function M = parte1()
     % Retorna la estructura con las referencias a los métodos implementados
     M.Thomas = @Thomas;
     M.Jacobi = @Jacobi;
+    M.Gauss_Seidel = @Gauss_Seidel;
     % Se irán agregando los demás métodos: Jacobi, GaussSeidel, GradienteConjugado...
 endfunction
 
@@ -133,4 +134,78 @@ function [xk, erk, k, conv] = Jacobi(A, b, x0, tol, iterMax)
     else
         conv = 0;
     endif
+endfunction
+
+% =========================================================================
+% Método Iterativo de Gauss-Seidel
+% =========================================================================
+function [xk, erk, k, conv] = Gauss_Seidel(A, b, x0, tol, iterMax)
+    % Esta función aproxima la solución del sistema lineal Ax = b mediante
+    % el método iterativo de Gauss-Seidel resolviendo M*x^(k+1) = c mediante
+    % sustitución hacia adelante (donde M = L + D).
+    %
+    % Parámetros
+    % ----------
+    % A       : matrix (n x n) - Matriz de coeficientes del sistema.
+    % b       : vector (n x 1) - Vector de términos independientes.
+    % x0      : vector (n x 1) - Vector de aproximación inicial x^(0).
+    % tol     : float          - Tolerancia para la norma 2 del residuo.
+    % iterMax : integer        - Número máximo de iteraciones permitidas.
+    %
+    % Retorna
+    % -------
+    % xk   : vector (n x 1) - Aproximación obtenida.
+    % erk  : float          - Error norma 2 del residuo ||A*xk - b||_2.
+    % k    : integer        - Número de iteraciones ejecutadas.
+    % conv : integer        - Indicador de convergencia (1 si convergió, 0 si no).
+
+    % Paso 1: Obtener L, D y U de la matriz A
+    b = b(:);    
+    D = diag(diag(A));
+    L = tril(A, -1);
+    U = triu(A, 1);
+
+    % Paso 2: Matriz triangular inferior M = L + D
+    M = L + D;
+
+    % Paso 3: Inicialización de variables
+    xk = x0(:);
+    erk = norm(A * xk - b, 2);
+    k = 0;
+
+    % Paso 4: Ciclo iterativo
+    while (erk > tol) && (k < iterMax)
+        % Término independiente c = b - U * x^(k)
+        c = b - U * xk;
+
+        % Resolver M * x_nuevo = c mediante sustitución hacia adelante
+        x_nuevo = sust_adelante(M, c);
+
+        % Actualización de la aproximación y del residuo
+        xk = x_nuevo;
+        erk = norm(A * xk - b, 2);
+        k = k + 1;
+    endwhile
+
+    % Paso 5: Verificación del criterio de convergencia
+    if erk < tol
+        conv = 1;
+    else
+        conv = 0;
+    endif
+endfunction
+
+% =========================================================================
+% Función Auxiliar: Sustitución hacia adelante para M*y = c
+% =========================================================================
+function y = sust_adelante(M, c)
+    n = length(c);
+    y = zeros(n, 1);
+    for i = 1:n
+        s = 0;
+        for j = 1:(i - 1)
+            s = s + M(i, j) * y(j);
+        endfor
+        y(i) = (c(i) - s) / M(i, i);
+    endfor
 endfunction
