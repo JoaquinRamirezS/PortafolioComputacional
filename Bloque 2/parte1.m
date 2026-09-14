@@ -1,16 +1,21 @@
-% =========================================================================
+% ===============================================================================
 % INSTITUTO TECNOLÓGICO DE COSTA RICA
-% Escuela de Matemática / Escuela de Ingeniería en Computadores
-# CE1111 - Análisis Numérico para Ingeniería
+% CE1111: Análisis Numérico para Ingeniería
+% Escuela de Ingeniería en Computadores
 %
-% Archivo: parte1.m (Sección: Método de Thomas)
+% Portafolio Bloque 2: Parte 1
+%
 % Autores: Joaquin Ignacio Ramírez Sequeira
-%          Joseph Stif Piedra Montero
+% Joseph Stif Piedra Montero
+%
+% Este archivo contiene la implementación computacional de los métodos
+% para la solución de sistemas de ecuaciones lineales Ax = b.
 % =========================================================================
 
 function M = parte1()
     % Retorna la estructura con las referencias a los métodos implementados
     M.Thomas = @Thomas;
+    M.Jacobi = @Jacobi;
     % Se irán agregando los demás métodos: Jacobi, GaussSeidel, GradienteConjugado...
 endfunction
 
@@ -71,4 +76,61 @@ function x = Thomas(A, b)
     for i = n-1:-1:1
         x(i) = q(i) - p(i) * x(i+1);
     endfor
+endfunction
+
+% =========================================================================
+% Método Iterativo de Jacobi
+% =========================================================================
+function [xk, erk, k, conv] = Jacobi(A, b, x0, tol, iterMax)
+    % Esta función aproxima la solución del sistema lineal Ax = b mediante
+    % el método iterativo de Jacobi.
+    %
+    % Parámetros
+    % ----------
+    % A       : matrix (n x n) - Matriz de coeficientes del sistema.
+    % b       : vector (n x 1) - Vector de términos independientes.
+    % x0      : vector (n x 1) - Vector de aproximación inicial x^(0).
+    % tol     : float          - Tolerancia para la norma 2 del residuo.
+    % iterMax : integer        - Número máximo de iteraciones permitidas.
+    %
+    % Retorna
+    % -------
+    % xk   : vector (n x 1) - Aproximación obtenida.
+    % erk  : float          - Error norma 2 del residuo ||A*xk - b||_2.
+    % k    : integer        - Número de iteraciones ejecutadas.
+    % conv : integer        - Indicador de convergencia (1 si convergió, 0 si no).
+
+    % Paso 1: Número de filas/columnas de A
+    b = b(:); % Garantizar vector columna
+    n = length(b);
+
+    % Paso 2: Recíprocos de los elementos diagonales de A (vector d_inv)
+    d_inv = 1 ./ diag(A);
+
+    % Paso 3: Descomposición R = L + U (matriz A sin la diagonal principal)
+    D = diag(diag(A));
+    R = A - D;
+
+    % Paso 4: Inicialización de variables
+    xk = x0(:); % Asegurar vector columna
+    erk = norm(A * xk - b, 2);
+    k = 0;
+
+    % Paso 5: Ciclo iterativo
+    while (erk > tol) && (k < iterMax)
+        % Cálculo de x^(k+1) = D^(-1) * (b - R * x^(k)) mediante producto de Hadamard
+        x_nuevo = d_inv .* (b - R * xk);
+        
+        % Actualización de la aproximación y del residuo
+        xk = x_nuevo;
+        erk = norm(A * xk - b, 2);
+        k = k + 1;
+    endwhile
+
+    % Paso 6: Verificación del criterio de convergencia
+    if erk < tol
+        conv = 1;
+    else
+        conv = 0;
+    endif
 endfunction
