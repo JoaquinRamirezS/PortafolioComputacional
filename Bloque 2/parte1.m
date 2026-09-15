@@ -17,6 +17,7 @@ function M = parte1()
     M.Thomas = @Thomas;
     M.Jacobi = @Jacobi;
     M.Gauss_Seidel = @Gauss_Seidel;
+    M.Gradiente_Conjugado = @Gradiente_Conjugado;
     % Se irán agregando los demás métodos: Jacobi, GaussSeidel, GradienteConjugado...
 endfunction
 
@@ -208,4 +209,64 @@ function y = sust_adelante(M, c)
         endfor
         y(i) = (c(i) - s) / M(i, i);
     endfor
+endfunction
+
+% =========================================================================
+% Método Iterativo del Gradiente Conjugado
+% =========================================================================
+function [xk, erk, k, conv] = Gradiente_Conjugado(A, b, x0, tol, iterMax)
+    % Entrada:
+    %   A       : Matriz simétrica y definida positiva (SPD) (n x n)
+    %   b       : Vector de términos independientes (n x 1)
+    %   x0      : Vector de aproximación inicial (n x 1)
+    %   tol     : Tolerancia para la norma 2 del residuo
+    %   iterMax : Número máximo de iteraciones permitidas
+    %
+    % Salida:
+    %   xk   : Vector solución aproximado
+    %   erk  : Error norma 2 del residuo ||b - A*xk||_2
+    %   k    : Número de iteraciones ejecutadas
+    %   conv : 1 si convergió (erk < tol), 0 si no
+
+    % Paso 1: Garantizar vectores columna
+    b = b(:);
+    xk = x0(:);
+
+    % Paso 2: Inicialización 
+    rk = b - A * xk;
+    pk = rk;
+    k = 0;
+    erk = norm(rk, 2);
+
+    % Paso 3: Ciclo iterativo 
+    while (norm(rk, 2) >= tol) && (k < iterMax)
+        Apk = A * pk;
+        rkrk = rk' * rk;
+        alpha = rkrk / (pk' * Apk);
+
+        % Actualización de solución y residuo 
+        xk = xk + alpha * pk;
+        rk_next = rk - alpha * Apk;
+        
+        % Verificación de convergencia intermedia 
+        if norm(rk_next, 2) < tol
+            k = k + 1;
+            break;
+        endif
+
+        % Factor beta y nueva dirección de búsqueda 
+        beta = (rk_next' * rk_next) / rkrk;
+        pk = rk_next + beta * pk;
+        rk = rk_next;
+        
+        k = k + 1; 
+    endwhile
+
+    % Paso 4: Cálculo final de error y conv 
+    erk = norm(b - A * xk, 2);
+    if erk < tol
+        conv = 1;
+    else
+        conv = 0;
+    endif
 endfunction
