@@ -37,10 +37,10 @@ function x = Eliminacion_Gaussiana(A,b)
 
     n = size(A,1);
     At=A;
-    bt=b; # Garantiza vector columna
+    bt=b(:); # Garantiza vector columna
 
     % ---------------------------------------------------------------------
-    % FASE DE ELIMINACIÓN HACIA ADELANTE
+    % REDUCCIÓN A MATRIZ TRIANGULAR SUPERIOR
     # ---------------------------------------------------------------------
     %Recorre cada columa de pivoteo k desde 1 hasta n-1
     for k = 1:n - 1
@@ -142,10 +142,137 @@ endfunction
 % =========================================================================
 % Método de Factorización de Cholesky
 % =========================================================================
+function x = Cholesky(A,b)
+% Entrada:
+    %   A : Matriz simétrica y definida positiva (n x n)
+    %   b : Vector de términos independientes (n x 1)
+    % Salida:
+    %   x : Vector solución del sistema (n x 1)
+
+  n=size(A,1); #Dimensión de la matriz
+  b = b(:); #Vector columa
+  L=zeros(n,n); #Matriz base
+  % =========================================================================
+  %DESCOMPOSICIÓN A = L * L^T
+  % =========================================================================
+  L(1,1)=sqrt(A(1,1)); %Primer elemento de la diagonal
+  %Llenar la primer columna por debajo de la diagonal
+  for j=2:n
+    L(j,1)=A(j,1)/L(1,1);
+  endfor
+  #Calcula de la columna 2 a n
+  for i=2:n
+    # Suma de los cuadrados de la fila i ya calculados
+    aux1=0;
+    for k=1:i-1
+      aux1=aux1+(L(i,k))^2;
+    endfor
+    %Elemento de la diagonal principal
+    L(i,i)=sqrt(A(i,i)-aux1);
+    #Elementos por debajo de la diagonal principal en la columna i
+    for j=i+1:n
+      aux2=0;
+      %Suma de productos
+      for k=1:i-1
+        aux2=aux2+L(j,k)*L(i,k);
+      endfor
+      %Despehe del elemento l_ji
+      L(j,i)=(A(j,i)-aux2)/L(i,i);
+    endfor
+  endfor
+    % ---------------------------------------------------------------------
+    % SUSTITUCIÓN HACIA ADELANTE (L * y = b)
+    % ---------------------------------------------------------------------
+    y = zeros(n, 1);    # Inicializa y
+
+    # Resuelve  L*y = b desde la fila 1 a la n
+    for i = 1:n
+        suma = 0;
+        # Acumula productos
+        for j = 1:i - 1
+            suma = suma + L(i, j) * y(j);
+        endfor
+        # Despeja y(i)
+        y(i) = (b(i) - suma) / L(i, i);
+    endfor
+    % ---------------------------------------------------------------------
+    % SUSTITUCIÓN HACIA ATRÁS (L^T * x = y)
+    % ---------------------------------------------------------------------
+    Lt = L';            # Traspuesta de L
+    x = zeros(n, 1);    # Inicializa x
+
+    # Calcula la última variable x(n)
+    x(n) = y(n) / Lt(n, n);
+
+    # Resuelve el sistema de la fila n-1 a la 1
+    for i = n - 1:-1:1
+        suma = 0;
+        # Acumula productos
+        for j = i + 1:n
+            suma = suma + Lt(i, j) * x(j);
+        endfor
+        # Despeja x(i)
+        x(i) = (y(i) - suma) / Lt(i, i);
+    endfor
+endfunction
 % =========================================================================
 % Método de de Factorización QR
 % =========================================================================
+function x = QR(A,b)
+    % Entrada:
+    %   A : Matriz de coeficientes de tamaño (n x n)
+    %   b : Vector de términos independientes de tamaño (n x 1)
+    %
+    % Salida:
+    %   x : Vector solución del sistema de ecuaciones (n x 1)
+    n=size(A,1); % Dimensión de A
+    b = b(:);     %b como vector columna
+    Q=zeros(n,n); %Inicializa Q
 
+    % ---------------------------------------------------------------------
+    % DESCOMPOSICIÓN QR
+    % ---------------------------------------------------------------------
+    %Vector inicial u1 = a1 y su norma para obtener q1
+    u1=A(:,1);
+    u1_norma=norm(u1);
+    q1=u1/u1_norma;
+    Q(:,1)=u1/u1_norma;
+
+    #Ciclo de 2 hasta n para ortogonalizar cada columna ak
+    for k=2:n
+      uk=A(:,k); #uk=ak
+      % Resta las proyecciones de ak sobre los vetores qj pasados
+      for j=1:k-1
+        #Producto interno <ak,qk>
+        prod_inter=Q(:,j)'*A(:,k);
+        #Ortogonalización-uk=uk-prod_inter*qj
+        uk=uk-prod_inter*Q(:,j);
+      endfor
+      %Normalizacion del vector uk
+      uk_norma=norm(uk);
+      %Almacenamiento en Q
+      Q(:,k)=uk/uk_norma;
+    endfor
+    #Cálculo de la matriz R
+    R=Q'* A;
+   % ---------------------------------------------------------------------
+   % SUSTITUCIÓN HACIA ATRÁS (R * x = Q^T * b)
+   % ---------------------------------------------------------------------
+    c = Q' * b;
+    x = zeros(n, 1);
+    # Calcula la última variable x(n)
+    x(n) = c(n) / R(n, n);
+    # Recorrido desde la fila n-1 hasta 1 para despejar cada x(i)
+    for i = n - 1:-1:1
+        suma = 0;
+        # Suma de variables
+        for j = i + 1:n
+            suma = suma + R(i, j) * x(j);
+        endfor
+        # Despeje final
+        x(i) = (c(i) - suma) / R(i, i);
+    endfor
+endfunction
 % =========================================================================
 % Método de Thomas para Matrices Tridiagonales
 % =========================================================================
