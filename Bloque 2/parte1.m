@@ -14,12 +14,137 @@
 
 function M = parte1()
     % Retorna la estructura con las referencias a los métodos implementados
+    M.Eliminacion_Gaussiana = @Eliminacion_Gaussiana;
+    M.Factorizacion_LU = @Factorizacion_LU;
+    M.Cholesky = @Cholesky;
+    M.QR = @QR;
     M.Thomas = @Thomas;
     M.Jacobi = @Jacobi;
     M.Gauss_Seidel = @Gauss_Seidel;
     M.Gradiente_Conjugado = @Gradiente_Conjugado;
-    % Se irán agregando los demás métodos: Jacobi, GaussSeidel, GradienteConjugado...
 endfunction
+
+% =========================================================================
+% Método de Eliminación Gaussiana
+% =========================================================================
+function x = Eliminacion_Gaussiana(A,b)
+  % Entrada:
+    %   A : Matriz de coeficientes de tamaño (n x n)
+    %   b : Vector de términos independientes de tamaño (n x 1)
+    %
+    % Salida:
+%   x : Vector solución del sistema de ecuaciones (n x 1)
+
+    n = size(A,1);
+    At=A;
+    bt=b; # Garantiza vector columna
+
+    % ---------------------------------------------------------------------
+    % FASE DE ELIMINACIÓN HACIA ADELANTE
+    # ---------------------------------------------------------------------
+    %Recorre cada columa de pivoteo k desde 1 hasta n-1
+    for k = 1:n - 1
+      %Recorre las filas i por debajp del pivoteo
+      %Desde k+1 hasta n
+      for i = k + 1:n
+        #Cálculo del multiplicador m_ik para la fila i
+        m = At(i,k)/At(k,k);
+        for j = k:n
+          At(i,j)=At(i,j)-m*At(k,j);
+        endfor
+        #Se actualiza el término b en la posición i
+        bt(i)=bt(i)-m*bt(k);
+      endfor
+    endfor
+    %Sustitución hacia atrás
+    x = zeros(n, 1);
+    x(n) = bt(n) / At(n, n);
+    %Recorrido para ir despejando cada xi
+    for i = n-1:-1:1
+        suma = 0;
+        %Suma de variables
+        for j = i+1:n
+            suma = suma + At(i, j) * x(j);
+        endfor
+        %Despeje final
+        x(i) = (bt(i) - suma) / At(i, i);
+    endfor
+endfunction
+% =========================================================================
+% Método de Factorización LU
+% =========================================================================
+function x =Factorizacion_LU(A,b)
+    % Entrada:
+    %   A : Matriz cuadrada de coeficientes de tamaño (n x n)
+    %
+    % Salida:
+    %   x : Vector solución del sistema (n x 1)
+    n=size(A,1);
+    b = b(:); %Para vector columna
+
+    %Inicialización de matrices
+    U=A; # Copia de A para obtener U
+    L=eye(n); # Matriz identidad nxn que almacenará los multiplicadores en la parte inferior
+    % ---------------------------------------------------------------------
+    % FASE DE DESCOMPOSICIÓN LU
+    % ---------------------------------------------------------------------
+    %Recorre cada pivote k desde la primera fila hasta n-1
+    for k=1:n-1
+     %Verificación de ´pivote nulo para evitar división por cero
+      if U(k,k)==0;
+        error("No se puede continuar sin pivoteo")
+      endif
+      %Recorre las filas i por debajo del pivote
+      for i=k+1:n
+        %Cálculo del multiplicador
+        m=U(i,k)/U(k,k);
+        %Almacenar mik en L
+        L(i,k)= m;
+        %Elimina la variable de la fila i actualizando U
+        for j=k:n
+          U(i,j)=U(i,j)-m*U(k,j); #Operación de fila
+        endfor
+      endfor
+    endfor
+    % ---------------------------------------------------------------------
+    % SUSTITUCIÓN HACIA ADELANTE (L * y = b)
+    % ---------------------------------------------------------------------
+    y = zeros(n, 1);
+    %Recorre desde la primera fila hasta la ultima despejando cada y
+    for i = 1:n
+        suma = 0;
+        %Suma de variables
+        for j = 1:i - 1
+            suma = suma + L(i, j) * y(j);
+        endfor
+        %Despeje final
+        y(i) = b(i) - suma;
+    endfor
+
+    % ---------------------------------------------------------------------
+    % SUSTITUCIÓN HACIA ATRÁS (U * x = y)
+    % ---------------------------------------------------------------------
+    x = zeros(n, 1);
+    %Caulcula la ultima variable x(n)
+    x(n) = y(n) / U(n, n);
+
+    %Recorrido desde la ultima fila hasta la primera despejando x
+    for i = n - 1:-1:1
+        suma = 0;
+        for j = i + 1:n
+          %Suma de variables
+            suma = suma + U(i, j) * x(j);
+        endfor
+        %Despeje final
+        x(i) = (y(i) - suma) / U(i, i);
+    endfor
+endfunction
+% =========================================================================
+% Método de Factorización de Cholesky
+% =========================================================================
+% =========================================================================
+% Método de de Factorización QR
+% =========================================================================
 
 % =========================================================================
 % Método de Thomas para Matrices Tridiagonales
@@ -122,7 +247,7 @@ function [xk, erk, k, conv] = Jacobi(A, b, x0, tol, iterMax)
     while (erk > tol) && (k < iterMax)
         % Cálculo de x^(k+1) = D^(-1) * (b - R * x^(k)) mediante producto de Hadamard
         x_nuevo = d_inv .* (b - R * xk);
-        
+
         % Actualización de la aproximación y del residuo
         xk = x_nuevo;
         erk = norm(A * xk - b, 2);
@@ -161,7 +286,7 @@ function [xk, erk, k, conv] = Gauss_Seidel(A, b, x0, tol, iterMax)
     % conv : integer        - Indicador de convergencia (1 si convergió, 0 si no).
 
     % Paso 1: Obtener L, D y U de la matriz A
-    b = b(:);    
+    b = b(:);
     D = diag(diag(A));
     L = tril(A, -1);
     U = triu(A, 1);
@@ -232,37 +357,37 @@ function [xk, erk, k, conv] = Gradiente_Conjugado(A, b, x0, tol, iterMax)
     b = b(:);
     xk = x0(:);
 
-    % Paso 2: Inicialización 
+    % Paso 2: Inicialización
     rk = b - A * xk;
     pk = rk;
     k = 0;
     erk = norm(rk, 2);
 
-    % Paso 3: Ciclo iterativo 
+    % Paso 3: Ciclo iterativo
     while (norm(rk, 2) >= tol) && (k < iterMax)
         Apk = A * pk;
         rkrk = rk' * rk;
         alpha = rkrk / (pk' * Apk);
 
-        % Actualización de solución y residuo 
+        % Actualización de solución y residuo
         xk = xk + alpha * pk;
         rk_next = rk - alpha * Apk;
-        
-        % Verificación de convergencia intermedia 
+
+        % Verificación de convergencia intermedia
         if norm(rk_next, 2) < tol
             k = k + 1;
             break;
         endif
 
-        % Factor beta y nueva dirección de búsqueda 
+        % Factor beta y nueva dirección de búsqueda
         beta = (rk_next' * rk_next) / rkrk;
         pk = rk_next + beta * pk;
         rk = rk_next;
-        
-        k = k + 1; 
+
+        k = k + 1;
     endwhile
 
-    % Paso 4: Cálculo final de error y conv 
+    % Paso 4: Cálculo final de error y conv
     erk = norm(b - A * xk, 2);
     if erk < tol
         conv = 1;
