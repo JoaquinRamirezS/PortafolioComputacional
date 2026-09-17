@@ -107,17 +107,13 @@ err_gc = norm(A*x_gc-b,2);
 %---------------------------------------------------------------------------
 %Tabla comparativa
 %---------------------------------------------------------------------------
-
-%---------------------------------------------------------------------------
-%Tabla comparativa
-%---------------------------------------------------------------------------
 fprintf('\n');
-fprintf('==========================================================================================\n');
-fprintf('                              TABLA COMPARATIVA DE MÉTODOS\n');
-fprintf('==========================================================================================\n');
+fprintf('============================================================================\n');
+fprintf('                     TABLA COMPARATIVA DE MÉTODOS\n');
+fprintf('============================================================================\n');
 fprintf('%-22s | %-14s | %-12s | %-10s | %-6s\n', ...
         'Método', 'Error ||Ax-b||', 'Tiempo (s)', 'Iter (k)', 'Conv');
-fprintf('------------------------------------------------------------------------------------------\n');
+fprintf('----------------------------------------------------------------------------\n');
 
 %Métodos directos
 fprintf('%-22s | %-14.4e | %-12.6f | %-10s | %-6s\n', ...
@@ -139,8 +135,89 @@ fprintf('%-22s | %-14.4e | %-12.6f | %-10d | %-6d\n', ...
 fprintf('%-22s | %-14.4e | %-12.6f | %-10d | %-6d\n', ...
         'Gradiente Conjugado', err_gc, time_gc, k_gc, conv_gc);
 
-fprintf('==========================================================================================\n\n');
+fprintf('============================================================================\n\n');
 
+%---------------------------------------------------------------------------
+%Gráficas
+%---------------------------------------------------------------------------
+
+%Datos
+%Metodos
+metodos = {'E.Gauss','LU','Cholesky','QR','Thomas','Jac','G-Seid','G.Conj'};
+%Metodos iterativos
+metodos_iterativos = {'Jacobi','Gauss-Seidel','Gradiente Conjugado'};
+
+%Tiempos
+tiempos = [time_eg,time_lu,time_ch,time_qr,time_th,time_j,time_gs,time_gc];
+%Errores
+errores = [err_eg,err_lu,err_ch,err_qr,err_th,err_j,err_gs,err_gc];
+%Iteraciones
+iteraciones = [k_j,k_gs,k_gc];
+
+%Evitar ceros en escala logaritmica
+tiempos(tiempos == 0) = eps;
+errores(errores == 0) = eps;
+
+%---------------------------------------------------------------------------
+%Gráficas Errores
+%---------------------------------------------------------------------------
+figure('Name','Errores','Color','w','Position',[100 100 1400 450]);
+
+subplot(1,3,1);
+
+%Crear la gráfica de barras
+bar(1:length(metodos),errores,'FaceColor',[0.3, 0.7, 0.4],'EdgeColor','k');
+
+%Configurar los ejes
+set(gca,'XTick',1:length(metodos),'XTickLabel',metodos);
+set(gca,'YScale','log');
+set(gca, 'XTickLabelRotation', 45); %Rotar nombres para que no se solapen
+
+%Titulos
+title('Comparación de errores entre métodos');
+xlabel('Métodos');
+ylabel(' Error ||Ax-b||_2');
+
+grid on;
+
+%---------------------------------------------------------------------------
+%Gráficas Tiempos
+%---------------------------------------------------------------------------
+subplot(1,3,2);
+
+%Crear la gráfica de barras
+bar(1:length(metodos),tiempos,'FaceColor',[0.1, 0.7, 0.7],'EdgeColor','k');
+
+%Configurar los ejes
+set(gca,'XTick',1:length(metodos),'XTickLabel',metodos);
+set(gca,'YScale','log');
+set(gca, 'XTickLabelRotation', 45); %Rotar nombres para que no se solapen
+
+%Titulos
+title('Comparación de tiempos de ejecución');
+xlabel('Métodos');
+ylabel('Tiempo(s)');
+
+grid on;
+%---------------------------------------------------------------------------
+%Gráficas Iteraciones
+%---------------------------------------------------------------------------
+subplot(1,3,3);
+
+%Crear la gráfica de barras
+bar(1:length(metodos_iterativos),iteraciones,'FaceColor',[0.6, 0.3, 0.7],'EdgeColor','k');
+
+%Configurar los ejes
+set(gca,'XTick',1:length(metodos_iterativos),'XTickLabel',metodos_iterativos);
+set(gca,'YScale','log');
+set(gca, 'XTickLabelRotation', 45); %Rotar nombres para que no se solapen
+
+%Titulos
+title('Iteraciones requeirdas por métodos iterativos');
+xlabel('Métodos Iterativos');
+ylabel('Número de iteraciones(k)');
+
+grid on;
 
 
 
