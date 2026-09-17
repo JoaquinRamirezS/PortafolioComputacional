@@ -155,8 +155,8 @@ errores = [err_eg,err_lu,err_ch,err_qr,err_th,err_j,err_gs,err_gc];
 iteraciones = [k_j,k_gs,k_gc];
 
 %Evitar ceros en escala logaritmica
-tiempos(tiempos == 0) = eps;
-errores(errores == 0) = eps;
+tiempos(tiempos <= 0) = eps;
+errores(errores <= 0) = eps;
 
 %---------------------------------------------------------------------------
 %Gráficas Errores
