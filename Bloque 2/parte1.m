@@ -91,7 +91,7 @@ function x =Factorizacion_LU(A,b)
     %Recorre cada pivote k desde la primera fila hasta n-1
     for k=1:n-1
      %Verificación de ´pivote nulo para evitar división por cero
-      if U(k,k)==0;
+      if U(k,k)==0
         error("No se puede continuar sin pivoteo")
       endif
       %Recorre las filas i por debajo del pivote
@@ -235,7 +235,6 @@ function x = QR(A,b)
     %Vector inicial u1 = a1 y su norma para obtener q1
     u1=A(:,1);
     u1_norma=norm(u1);
-    q1=u1/u1_norma;
     Q(:,1)=u1/u1_norma;
 
     #Ciclo de 2 hasta n para ortogonalizar cada columna ak
