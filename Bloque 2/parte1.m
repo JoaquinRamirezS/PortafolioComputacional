@@ -6,7 +6,7 @@
 % Portafolio Bloque 2: Parte 1
 %
 % Autores: Joaquin Ignacio Ramírez Sequeira
-% Joseph Stif Piedra Montero
+%          Joseph Stif Piedra Montero
 %
 % Este archivo contiene la implementación computacional de los métodos
 % para la solución de sistemas de ecuaciones lineales Ax = b.
@@ -15,109 +15,108 @@
 function M = parte1()
     % Retorna la estructura con las referencias a los métodos implementados
     M.Eliminacion_Gaussiana = @Eliminacion_Gaussiana;
-    M.Factorizacion_LU = @Factorizacion_LU;
-    M.Cholesky = @Cholesky;
-    M.QR = @QR;
-    M.Thomas = @Thomas;
-    M.Jacobi = @Jacobi;
-    M.Gauss_Seidel = @Gauss_Seidel;
-    M.Gradiente_Conjugado = @Gradiente_Conjugado;
+    M.Factorizacion_LU      = @Factorizacion_LU;
+    M.Cholesky               = @Cholesky;
+    M.QR                     = @QR;
+    M.Thomas                 = @Thomas;
+    M.Jacobi                 = @Jacobi;
+    M.Gauss_Seidel           = @Gauss_Seidel;
+    M.Gradiente_Conjugado    = @Gradiente_Conjugado;
 endfunction
 
 % =========================================================================
 % Método de Eliminación Gaussiana
 % =========================================================================
-function x = Eliminacion_Gaussiana(A,b)
-  % Entrada:
+function x = Eliminacion_Gaussiana(A, b)
+    % Entrada:
     %   A : Matriz de coeficientes de tamaño (n x n)
     %   b : Vector de términos independientes de tamaño (n x 1)
     %
     % Salida:
-%   x : Vector solución del sistema de ecuaciones (n x 1)
+    %   x : Vector solución del sistema de ecuaciones (n x 1)
 
-    n = size(A,1);
-    At=A;
-    bt=b(:); # Garantiza vector columna
+    n = size(A, 1);
+    At = A;
+    bt = b(:); % Garantiza vector columna
 
     % ---------------------------------------------------------------------
     % REDUCCIÓN A MATRIZ TRIANGULAR SUPERIOR
-    # ---------------------------------------------------------------------
-    %Recorre cada columa de pivoteo k desde 1 hasta n-1
+    % ---------------------------------------------------------------------
+    % Recorre cada columna de pivoteo k desde 1 hasta n-1
     for k = 1:n - 1
-      %Recorre las filas i por debajp del pivoteo
-      %Desde k+1 hasta n
-      for i = k + 1:n
-        #Cálculo del multiplicador m_ik para la fila i
-        m = At(i,k)/At(k,k);
-        for j = k:n
-          At(i,j)=At(i,j)-m*At(k,j);
+        % Recorre las filas i por debajo del pivoteo desde k+1 hasta n
+        for i = k + 1:n
+            % Cálculo del multiplicador m_ik para la fila i
+            m = At(i, k) / At(k, k);
+            % Operación de fila (vectorizada)
+            At(i, k:n) = At(i, k:n) - m * At(k, k:n);
+            % Se actualiza el término b en la posición i
+            bt(i) = bt(i) - m * bt(k);
         endfor
-        #Se actualiza el término b en la posición i
-        bt(i)=bt(i)-m*bt(k);
-      endfor
     endfor
-    %Sustitución hacia atrás
+
+    % ---------------------------------------------------------------------
+    % SUSTITUCIÓN HACIA ATRÁS
+    % ---------------------------------------------------------------------
     x = zeros(n, 1);
     x(n) = bt(n) / At(n, n);
-    %Recorrido para ir despejando cada xi
-    for i = n-1:-1:1
-        suma = 0;
-        %Suma de variables
-        for j = i+1:n
-            suma = suma + At(i, j) * x(j);
-        endfor
-        %Despeje final
+    % Recorrido para ir despejando cada xi
+    for i = n - 1:-1:1
+        % Suma vectorizada de variables
+        suma = At(i, i+1:n) * x(i+1:n);
+        % Despeje final
         x(i) = (bt(i) - suma) / At(i, i);
     endfor
 endfunction
+
 % =========================================================================
 % Método de Factorización LU
 % =========================================================================
-function x =Factorizacion_LU(A,b)
+function x = Factorizacion_LU(A, b)
     % Entrada:
     %   A : Matriz cuadrada de coeficientes de tamaño (n x n)
+    %   b : Vector de términos independientes de tamaño (n x 1)
     %
     % Salida:
     %   x : Vector solución del sistema (n x 1)
-    n=size(A,1);
-    b = b(:); %Para vector columna
 
-    %Inicialización de matrices
-    U=A; # Copia de A para obtener U
-    L=eye(n); # Matriz identidad nxn que almacenará los multiplicadores en la parte inferior
+    n = size(A, 1);
+    b = b(:); % Para vector columna
+
+    % Inicialización de matrices
+    U = A; % Copia de A para obtener U
+    L = eye(n); % Matriz identidad nxn que almacenará los multiplicadores en la parte inferior
+
     % ---------------------------------------------------------------------
     % FASE DE DESCOMPOSICIÓN LU
     % ---------------------------------------------------------------------
-    %Recorre cada pivote k desde la primera fila hasta n-1
-    for k=1:n-1
-     %Verificación de ´pivote nulo para evitar división por cero
-      if U(k,k)==0
-        error("No se puede continuar sin pivoteo")
-      endif
-      %Recorre las filas i por debajo del pivote
-      for i=k+1:n
-        %Cálculo del multiplicador
-        m=U(i,k)/U(k,k);
-        %Almacenar mik en L
-        L(i,k)= m;
-        %Elimina la variable de la fila i actualizando U
-        for j=k:n
-          U(i,j)=U(i,j)-m*U(k,j); #Operación de fila
+    % Recorre cada pivote k desde la primera fila hasta n-1
+    for k = 1:n - 1
+        % Verificación de pivote nulo para evitar división por cero
+        if U(k, k) == 0
+            error("No se puede continuar sin pivoteo")
+        endif
+        % Recorre las filas i por debajo del pivote
+        for i = k + 1:n
+            % Cálculo del multiplicador
+            m = U(i, k) / U(k, k);
+            % Almacenar mik en L
+            L(i, k) = m;
+            % Elimina la variable de la fila i actualizando U (operación vectorizada)
+            U(i, k:n) = U(i, k:n) - m * U(k, k:n);
         endfor
-      endfor
     endfor
+
     % ---------------------------------------------------------------------
     % SUSTITUCIÓN HACIA ADELANTE (L * y = b)
     % ---------------------------------------------------------------------
     y = zeros(n, 1);
-    %Recorre desde la primera fila hasta la ultima despejando cada y
-    for i = 1:n
-        suma = 0;
-        %Suma de variables
-        for j = 1:i - 1
-            suma = suma + L(i, j) * y(j);
-        endfor
-        %Despeje final
+    y(1) = b(1);
+    % Recorre desde la segunda fila hasta la última despejando cada y
+    for i = 2:n
+        % Suma vectorizada de variables
+        suma = L(i, 1:i-1) * y(1:i-1);
+        % Despeje final
         y(i) = b(i) - suma;
     endfor
 
@@ -125,153 +124,147 @@ function x =Factorizacion_LU(A,b)
     % SUSTITUCIÓN HACIA ATRÁS (U * x = y)
     % ---------------------------------------------------------------------
     x = zeros(n, 1);
-    %Caulcula la ultima variable x(n)
+    % Calcula la última variable x(n)
     x(n) = y(n) / U(n, n);
 
-    %Recorrido desde la ultima fila hasta la primera despejando x
+    % Recorrido desde la penúltima fila hasta la primera despejando x
     for i = n - 1:-1:1
-        suma = 0;
-        for j = i + 1:n
-          %Suma de variables
-            suma = suma + U(i, j) * x(j);
-        endfor
-        %Despeje final
+        % Suma vectorizada de variables
+        suma = U(i, i+1:n) * x(i+1:n);
+        % Despeje final
         x(i) = (y(i) - suma) / U(i, i);
     endfor
 endfunction
+
 % =========================================================================
 % Método de Factorización de Cholesky
 % =========================================================================
-function x = Cholesky(A,b)
-% Entrada:
+function x = Cholesky(A, b)
+    % Entrada:
     %   A : Matriz simétrica y definida positiva (n x n)
     %   b : Vector de términos independientes (n x 1)
     % Salida:
     %   x : Vector solución del sistema (n x 1)
 
-  n=size(A,1); #Dimensión de la matriz
-  b = b(:); #Vector columa
-  L=zeros(n,n); #Matriz base
-  % =========================================================================
-  %DESCOMPOSICIÓN A = L * L^T
-  % =========================================================================
-  L(1,1)=sqrt(A(1,1)); %Primer elemento de la diagonal
-  %Llenar la primer columna por debajo de la diagonal
-  for j=2:n
-    L(j,1)=A(j,1)/L(1,1);
-  endfor
-  #Calcula de la columna 2 a n
-  for i=2:n
-    # Suma de los cuadrados de la fila i ya calculados
-    aux1=0;
-    for k=1:i-1
-      aux1=aux1+(L(i,k))^2;
+    n = size(A, 1); % Dimensión de la matriz
+    b = b(:); % Vector columna
+    L = zeros(n, n); % Matriz base
+
+    % =========================================================================
+    % DESCOMPOSICIÓN A = L * L^T
+    % =========================================================================
+    L(1, 1) = sqrt(A(1, 1)); % Primer elemento de la diagonal
+    % Llenar la primera columna por debajo de la diagonal
+    for j = 2:n
+        L(j, 1) = A(j, 1) / L(1, 1);
     endfor
-    %Elemento de la diagonal principal
-    L(i,i)=sqrt(A(i,i)-aux1);
-    #Elementos por debajo de la diagonal principal en la columna i
-    for j=i+1:n
-      aux2=0;
-      %Suma de productos
-      for k=1:i-1
-        aux2=aux2+L(j,k)*L(i,k);
-      endfor
-      %Despehe del elemento l_ji
-      L(j,i)=(A(j,i)-aux2)/L(i,i);
+
+    % Calcula de la columna 2 a n
+    for i = 2:n
+        % Suma de los cuadrados de la fila i ya calculados
+        aux1 = sum(L(i, 1:i-1).^2);
+        % Elemento de la diagonal principal
+        L(i, i) = sqrt(A(i, i) - aux1);
+        % Elementos por debajo de la diagonal principal en la columna i
+        for j = i + 1:n
+            % Suma de productos vectorizada
+            aux2 = L(j, 1:i-1) * L(i, 1:i-1)';
+            % Despeje del elemento l_ji
+            L(j, i) = (A(j, i) - aux2) / L(i, i);
+        endfor
     endfor
-  endfor
+
     % ---------------------------------------------------------------------
     % SUSTITUCIÓN HACIA ADELANTE (L * y = b)
     % ---------------------------------------------------------------------
-    y = zeros(n, 1);    # Inicializa y
+    y = zeros(n, 1);    % Inicializa y
+    y(1) = b(1) / L(1, 1);
 
-    # Resuelve  L*y = b desde la fila 1 a la n
-    for i = 1:n
-        suma = 0;
-        # Acumula productos
-        for j = 1:i - 1
-            suma = suma + L(i, j) * y(j);
-        endfor
-        # Despeja y(i)
+    % Resuelve L*y = b desde la fila 2 a la n
+    for i = 2:n
+        % Acumula productos vectorizados
+        suma = L(i, 1:i-1) * y(1:i-1);
+        % Despeja y(i)
         y(i) = (b(i) - suma) / L(i, i);
     endfor
+
     % ---------------------------------------------------------------------
     % SUSTITUCIÓN HACIA ATRÁS (L^T * x = y)
     % ---------------------------------------------------------------------
-    Lt = L';            # Traspuesta de L
-    x = zeros(n, 1);    # Inicializa x
+    Lt = L';            % Traspuesta de L
+    x = zeros(n, 1);    % Inicializa x
 
-    # Calcula la última variable x(n)
+    % Calcula la última variable x(n)
     x(n) = y(n) / Lt(n, n);
 
-    # Resuelve el sistema de la fila n-1 a la 1
+    % Resuelve el sistema de la fila n-1 a la 1
     for i = n - 1:-1:1
-        suma = 0;
-        # Acumula productos
-        for j = i + 1:n
-            suma = suma + Lt(i, j) * x(j);
-        endfor
-        # Despeja x(i)
+        % Acumula productos vectorizados
+        suma = Lt(i, i+1:n) * x(i+1:n);
+        % Despeja x(i)
         x(i) = (y(i) - suma) / Lt(i, i);
     endfor
 endfunction
+
 % =========================================================================
-% Método de de Factorización QR
+% Método de Factorización QR
 % =========================================================================
-function x = QR(A,b)
+function x = QR(A, b)
     % Entrada:
     %   A : Matriz de coeficientes de tamaño (n x n)
     %   b : Vector de términos independientes de tamaño (n x 1)
     %
     % Salida:
     %   x : Vector solución del sistema de ecuaciones (n x 1)
-    n=size(A,1); % Dimensión de A
-    b = b(:);     %b como vector columna
-    Q=zeros(n,n); %Inicializa Q
+
+    n = size(A, 1); % Dimensión de A
+    b = b(:);     % b como vector columna
+    Q = zeros(n, n); % Inicializa Q
 
     % ---------------------------------------------------------------------
     % DESCOMPOSICIÓN QR
     % ---------------------------------------------------------------------
-    %Vector inicial u1 = a1 y su norma para obtener q1
-    u1=A(:,1);
-    u1_norma=norm(u1);
-    Q(:,1)=u1/u1_norma;
+    % Vector inicial u1 = a1 y su norma para obtener q1
+    u1 = A(:, 1);
+    u1_norma = norm(u1);
+    Q(:, 1) = u1 / u1_norma;
 
-    #Ciclo de 2 hasta n para ortogonalizar cada columna ak
-    for k=2:n
-      uk=A(:,k); #uk=ak
-      % Resta las proyecciones de ak sobre los vetores qj pasados
-      for j=1:k-1
-        #Producto interno <ak,qk>
-        prod_inter=Q(:,j)'*A(:,k);
-        #Ortogonalización-uk=uk-prod_inter*qj
-        uk=uk-prod_inter*Q(:,j);
-      endfor
-      %Normalizacion del vector uk
-      uk_norma=norm(uk);
-      %Almacenamiento en Q
-      Q(:,k)=uk/uk_norma;
+    % Ciclo de 2 hasta n para ortogonalizar cada columna ak
+    for k = 2:n
+        uk = A(:, k); % uk = ak
+        % Resta las proyecciones de ak sobre los vectores qj pasados
+        for j = 1:k - 1
+            % Producto interno <ak,qk>
+            prod_inter = Q(:, j)' * A(:, k);
+            % Ortogonalización uk = uk - prod_inter * qj
+            uk = uk - prod_inter * Q(:, j);
+        endfor
+        % Normalización del vector uk
+        uk_norma = norm(uk);
+        % Almacenamiento en Q
+        Q(:, k) = uk / uk_norma;
     endfor
-    #Cálculo de la matriz R
-    R=Q'* A;
-   % ---------------------------------------------------------------------
-   % SUSTITUCIÓN HACIA ATRÁS (R * x = Q^T * b)
-   % ---------------------------------------------------------------------
+
+    % Cálculo de la matriz R
+    R = Q' * A;
+
+    % ---------------------------------------------------------------------
+    % SUSTITUCIÓN HACIA ATRÁS (R * x = Q^T * b)
+    % ---------------------------------------------------------------------
     c = Q' * b;
     x = zeros(n, 1);
-    # Calcula la última variable x(n)
+    % Calcula la última variable x(n)
     x(n) = c(n) / R(n, n);
-    # Recorrido desde la fila n-1 hasta 1 para despejar cada x(i)
+
+    % Recorrido desde la fila n-1 hasta 1 para despejar cada x(i)
     for i = n - 1:-1:1
-        suma = 0;
-        # Suma de variables
-        for j = i + 1:n
-            suma = suma + R(i, j) * x(j);
-        endfor
-        # Despeje final
+        % Suma vectorizada de variables
+        suma = R(i, i+1:n) * x(i+1:n);
+        % Despeje final
         x(i) = (c(i) - suma) / R(i, i);
     endfor
 endfunction
+
 % =========================================================================
 % Método de Thomas para Matrices Tridiagonales
 % =========================================================================
@@ -307,15 +300,15 @@ function x = Thomas(A, b)
     q(1) = d(1) / b_diag(1);
 
     % 2 y 3. Iteraciones para i = 2 hasta n-1
-    for i = 2:n-1
-        denom = b_diag(i) - p(i-1) * a_sub(i);
+    for i = 2:n - 1
+        denom = b_diag(i) - p(i - 1) * a_sub(i);
         p(i) = c_sup(i) / denom;
-        q(i) = (d(i) - q(i-1) * a_sub(i)) / denom;
+        q(i) = (d(i) - q(i - 1) * a_sub(i)) / denom;
     endfor
 
     % 3. Último cálculo de q_n para i = n
-    denom = b_diag(n) - p(n-1) * a_sub(n);
-    q(n) = (d(n) - q(n-1) * a_sub(n)) / denom;
+    denom = b_diag(n) - p(n - 1) * a_sub(n);
+    q(n) = (d(n) - q(n - 1) * a_sub(n)) / denom;
 
     % ---------------------------------------------------------------------
     % FASE DE SUSTITUCIÓN BACKWARD
@@ -326,8 +319,8 @@ function x = Thomas(A, b)
     x(n) = q(n);
 
     % 5. Sustitución hacia atrás para i = n-1 descendiendo hasta 1
-    for i = n-1:-1:1
-        x(i) = q(i) - p(i) * x(i+1);
+    for i = n - 1:-1:1
+        x(i) = q(i) - p(i) * x(i + 1);
     endfor
 endfunction
 
@@ -453,11 +446,10 @@ endfunction
 function y = sust_adelante(M, c)
     n = length(c);
     y = zeros(n, 1);
-    for i = 1:n
-        s = 0;
-        for j = 1:(i - 1)
-            s = s + M(i, j) * y(j);
-        endfor
+    y(1) = c(1) / M(1, 1);
+    for i = 2:n
+        % Suma vectorizada equivalente a \sum_{j=1}^{i-1} M(i,j)*y(j)
+        s = M(i, 1:i-1) * y(1:i-1);
         y(i) = (c(i) - s) / M(i, i);
     endfor
 endfunction
