@@ -3,7 +3,7 @@
 % CE1111: Análisis Numérico para Ingeniería
 % Escuela de Ingeniería en Computadores
 %
-% Portafolio Bloque 2: Parte 1
+% Portafolio Bloque 2: Parte 2
 %
 % Autores: Joaquin Ignacio Ramírez Sequeira
 % Joseph Stif Piedra Montero
@@ -104,6 +104,42 @@ time_gc = toc;
 %Cálculo del error
 err_gc = norm(A*x_gc-b,2);
 
+%---------------------------------------------------------------------------
+%Tabla comparativa
+%---------------------------------------------------------------------------
+
+%---------------------------------------------------------------------------
+%Tabla comparativa
+%---------------------------------------------------------------------------
+fprintf('\n');
+fprintf('==========================================================================================\n');
+fprintf('                              TABLA COMPARATIVA DE MÉTODOS\n');
+fprintf('==========================================================================================\n');
+fprintf('%-22s | %-14s | %-12s | %-10s | %-6s\n', ...
+        'Método', 'Error ||Ax-b||', 'Tiempo (s)', 'Iter (k)', 'Conv');
+fprintf('------------------------------------------------------------------------------------------\n');
+
+%Métodos directos
+fprintf('%-22s | %-14.4e | %-12.6f | %-10s | %-6s\n', ...
+        'Eliminación Gaussiana', err_eg, time_eg, '-', '-');
+fprintf('%-22s | %-14.4e | %-12.6f | %-10s | %-6s\n', ...
+        'Factorización LU', err_lu, time_lu, '-', '-');
+fprintf('%-22s | %-14.4e | %-12.6f | %-10s | %-6s\n', ...
+        'Cholesky', err_ch, time_ch, '-', '-');
+fprintf('%-22s | %-14.4e | %-12.6f | %-10s | %-6s\n', ...
+        'QR', err_qr, time_qr, '-', '-');
+fprintf('%-22s | %-14.4e | %-12.6f | %-10s | %-6s\n', ...
+        'Thomas', err_th, time_th, '-', '-');
+
+% Métodos iterativos
+fprintf('%-22s | %-14.4e | %-12.6f | %-10d | %-6d\n', ...
+        'Jacobi', err_j, time_j, k_j, conv_j);
+fprintf('%-22s | %-14.4e | %-12.6f | %-10d | %-6d\n', ...
+        'Gauss-Seidel', err_gs, time_gs, k_gs, conv_gs);
+fprintf('%-22s | %-14.4e | %-12.6f | %-10d | %-6d\n', ...
+        'Gradiente Conjugado', err_gc, time_gc, k_gc, conv_gc);
+
+fprintf('==========================================================================================\n\n');
 
 
 
