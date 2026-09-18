@@ -103,7 +103,6 @@ tic;
 time_gc = toc;
 %Cálculo del error
 err_gc = norm(A*x_gc-b,2);
-
 %---------------------------------------------------------------------------
 %Tabla comparativa
 %---------------------------------------------------------------------------
@@ -143,7 +142,7 @@ fprintf('=======================================================================
 
 %Datos
 %Metodos
-metodos = {'E.Gauss','LU','Cholesky','QR','Thomas','Jac','G-Seid','G.Conj'};
+metodos = {'E.Gauss','LU','Cholesky','QR','Thomas','Jac','G-S','G.Conj'};
 %Metodos iterativos
 metodos_iterativos = {'Jacobi','Gauss-Seidel','Gradiente Conjugado'};
 
@@ -157,7 +156,6 @@ iteraciones = [k_j,k_gs,k_gc];
 %Evitar ceros en escala logaritmica
 tiempos(tiempos <= 0) = eps;
 errores(errores <= 0) = eps;
-
 %---------------------------------------------------------------------------
 %Gráficas Errores
 %---------------------------------------------------------------------------
@@ -170,6 +168,7 @@ bar(1:length(metodos),errores,'FaceColor',[0.3, 0.7, 0.4],'EdgeColor','k');
 
 %Configurar los ejes
 set(gca,'XTick',1:length(metodos),'XTickLabel',metodos);
+ylim([min(errores)*0.5, max(errores)*2]);
 set(gca,'YScale','log');
 set(gca, 'XTickLabelRotation', 45); %Rotar nombres para que no se solapen
 
@@ -190,6 +189,7 @@ bar(1:length(metodos),tiempos,'FaceColor',[0.1, 0.7, 0.7],'EdgeColor','k');
 
 %Configurar los ejes
 set(gca,'XTick',1:length(metodos),'XTickLabel',metodos);
+ylim([min(tiempos)*0.5, max(tiempos)*2]);
 set(gca,'YScale','log');
 set(gca, 'XTickLabelRotation', 45); %Rotar nombres para que no se solapen
 
@@ -217,6 +217,48 @@ xlabel('Métodos Iterativos');
 ylabel('Número de iteraciones(k)');
 
 grid on;
+%---------------------------------------------------------------------------
+%Análisis comparativo de resultados
+%---------------------------------------------------------------------------
+fprintf('\n================================================================================\n');
+fprintf('                      Análisis comparativo de los resultados\n');
+fprintf('================================================================================\n\n');
+fprintf('La matriz A es tridiagonal, con 4 en la diagonal y -1 en las adyacentes.Es simetrica (A = A^T)\n');
+fprintf('lo que se ve reflejado en sus subdiagonales, y es definida positiva segun el Criterio de Sylvester.\n');
+fprintf('Estas propiedadesle permiten aplicar metodos especializados como Cholesky y Gradiente Conjugado,\n');
+fprintf('mientras que la estricta diagonal dominancia garantiza la convergencia teorica de metodos iterativos \n');
+fprintf('como Jacobi y Gauss-Seidel.\n\n');
+
+fprintf('Al analizar los metodos directos (Eliminacion Gaussiana, LU, Cholesky, QR y Thomas),\n');
+fprintf('se observan errores pequeños, del orden de 10^-15 a 10^-14,\n');
+fprintf('correspondientes al limite de redondeo computacional. Dentro de este grupo,\n');
+fprintf('Eliminacion Gaussiana (aprox 1.50 s) y Factorizacion LU (aprox 1.20 s)\n');
+fprintf('presentan los mayores tiempos, debido a que procesan toda la matriz sin aprovechar\n');
+fprintf('que esta llena de ceros. Cholesky (aprox 0.90 s) reduce el tiempo al aprovechar que la matriz\n');
+fprintf('es simetrica y trabajar solo con la mitad de ella. QR (aprox 0.60 s) resulta rapido debido a que trabaja\n');
+fprintf('con vectores completos en lugar de elemento por elemento. Finalmente, el Algoritmo de Thomas \n');
+fprintf('(aprox 0.0090 s) es el mas rapido de todos con amplia diferencia, ya que esta disenado \n');
+fprintf('especificamente para matrices tridiagonales y aprovecha al maximo la estructura de la matriz A.\n');
+
+fprintf('Por otra parte, los metodos iterativos (Jacobi, Gauss-Seidel y Gradiente Conjugado)\n');
+fprintf('alcanzaron errores del orden de 10^-9, lo que responde a la tolerancia de 1e-8.\n');
+fprintf('En cuanto al numero de iteraciones, Jacobi requirio %d iteraciones,Gauss-Seidel %d\n', k_j, k_gs);
+fprintf('y Gradiente Conjugado %d. Gauss-Seidel logra converger en menos iteraciones que\n',  k_gc);
+fprintf('Jacobi porque utiliza los valores actualizados de forma inmediata;\n');
+fprintf('sin embargo, su tiempo por iteracion es mayor. Por su parte, el Gradiente Conjugado\n');
+fprintf('se posiciona como el metodo iterativo optimo, ya que aprovecha la naturaleza SDP de la\n');
+fprintf('matriz, requiere el menor numero de iteraciones y presenta el menor tiempo de\n');
+fprintf('ejecucion de todo el estudio.\n\n');
+
+fprintf('Estos resultados permiten concluir que el desempeno de cada metodo esta estrechamente\n');
+fprintf('relacionado con las propiedades estructurales de la matriz A. Como se evidencio\n');
+fprintf('anteriormente, en metodos directos el Algoritmo de Thomas resulta la mejor opcion,\n');
+fprintf('lo cual se ve reflejado en su error y tiempo de ejecucion. Para los metodos iterativos,\n');
+fprintf('el Gradiente Conjugado es el que mejor aprovecha las caracteristicas de la matriz; esto\n');
+fprintf('se refleja en una convergencia con menos cantidad de iteraciones, y un menor error y\n');
+fprintf('tiempo de ejecucion, en comparacion con los otros dos metodos.\n\n');
+fprintf('================================================================================\n\n');
+
 
 
 
