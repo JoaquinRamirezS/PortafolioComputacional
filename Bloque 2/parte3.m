@@ -125,31 +125,39 @@ fprintf(['1. EQUIVALENCIA DE LAS SOLUCIONES:\n', ...
          '   sobre la solución continua T(x) = 20 + 30x + 10*sin(pi*x), validando la discretización.\n']);
 fprintf('====================================================================================================\n\n');
 
-% 7. Generación de Gráficas Comparativas sin warnings de Log
-nombres_metodos = {'E.Gaussiana', 'LU', 'Cholesky', 'QR', 'Thomas', 'Jacobi', 'G-Seidel', 'Grad.Conj'};
+
+% 7. Generación de Gráficas Comparativas
+
+% Nombres compactos para garantizar lectura sin colisión
+nombres_metodos = {'E-Gauss', 'LU', 'Cholesky', 'QR', 'Thomas', 'Jacobi', 'G-Seidel', 'G-Conj'};
 errores_todos = [err_eg, err_lu, err_ch, err_qr, err_th, err_j, err_gs, err_gc];
 tiempos_todos = [t_eg, t_lu, t_ch, t_qr, t_th, t_j, t_gs, t_gc];
 
-figure('Name', 'Comparacion de Métodos - Bloque 2 Parte 3', 'NumberTitle', 'off');
+figure('Name', 'Comparacion de Métodos - Bloque 2 Parte 3', ...
+       'NumberTitle', 'off', ...
+       'Position', [50, 100, 1300, 500]);
 
+% Subplot 1: Errores
 subplot(1, 3, 1);
 bar(errores_todos, 'FaceColor', [0.2, 0.4, 0.8]);
-set(gca, 'XTickLabel', nombres_metodos, 'XTick', 1:8);
+set(gca, 'XTick', 1:8, 'XTickLabel', nombres_metodos, 'FontSize', 8, 'XTickLabelRotation', 45);
 set(gca, 'YScale', 'log'); ylim([1e-9, 1e-6]);
-title('Error Residuo ||AT - b||_2'); xlabel('Método'); ylabel('Error (escala log)'); grid on; xtickangle(45);
+title('Error Residuo ||AT - b||_2'); xlabel('Método'); ylabel('Error (escala log)'); grid on;
 
+% Subplot 2: Tiempos de ejecución
 subplot(1, 3, 2);
 bar(tiempos_todos, 'FaceColor', [0.8, 0.3, 0.2]);
-set(gca, 'XTickLabel', nombres_metodos, 'XTick', 1:8);
+set(gca, 'XTick', 1:8, 'XTickLabel', nombres_metodos, 'FontSize', 8, 'XTickLabelRotation', 45);
 set(gca, 'YScale', 'log'); ylim([1e-3, 1e3]);
-title('Tiempo de Ejecución'); xlabel('Método'); ylabel('Tiempo en s (escala log)'); grid on; xtickangle(45);
+title('Tiempo de Ejecución'); xlabel('Método'); ylabel('Tiempo en s (escala log)'); grid on;
 
+% Subplot 3: Número de Iteraciones
 subplot(1, 3, 3);
-nombres_iter = {'Jacobi', 'Gauss-Seidel', 'Grad.Conj'};
+nombres_iter = {'Jacobi', 'Gauss-Seidel', 'G-Conj'};
 iteraciones = [k_j, k_gs, k_gc];
 bar(iteraciones, 'FaceColor', [0.2, 0.7, 0.3]);
-set(gca, 'XTickLabel', nombres_iter, 'XTick', 1:3);
-title('Número de Iteraciones'); xlabel('Método Iterativo'); ylabel('Iteraciones'); grid on; xtickangle(45);
+set(gca, 'XTick', 1:3, 'XTickLabel', nombres_iter, 'FontSize', 8, 'XTickLabelRotation', 30);
+title('Número de Iteraciones'); xlabel('Método Iterativo'); ylabel('Iteraciones'); grid on;
 
 % 8. Gráfica de la Distribución de Temperatura
 x_fino = linspace(0, L, 1000);
