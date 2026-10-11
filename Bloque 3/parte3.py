@@ -15,7 +15,7 @@ import matplotlib.pyplot as plt
 from parte1 import metodo_QR, metodo_Jacobi
 
 
-# Rutas relativas al archivi del script
+# Rutas relativas al archivo del script
 DIR_SCRIPT = Path(__file__).resolve().parent
 CARPETA_DATASET = DIR_SCRIPT / "dataset_att"
 CARPETA_SALIDA = DIR_SCRIPT / "resultados_parte3"
@@ -34,7 +34,7 @@ VARIACION_OBJETIVO = 0.95 #Retener el 95% de la variacion acumulada
 FILAS, COLUMNAS = 56, 46 #(56 filas x 46 columnas)
 N_PIXELES = FILAS * COLUMNAS #2576
 
-# Separacion entrenamientoprueba
+# Separacion entrenamiento-prueba
 PERSONAS = range(1, 41)
 FOTOS_ENTRENAMIENTO = range(1, 10) #Fotos para entrenar 
 FOTO_PRUEBA = 10 #Foto para probar
@@ -42,7 +42,7 @@ FOTO_PRUEBA = 10 #Foto para probar
 
 # Pasos del 1 al 3: Carga, preprocesamiento y vectorizacion de imagenes
 def cargar_imagen(ruta):
-    #Carga una imagen en escala de grises y la normaliza d [0,1]
+    #Carga una imagen en escala de grises y la normaliza a [0,1]
     with Image.open(ruta) as im:
         im = im.convert("L")
         if im.size != (COLUMNAS, FILAS):
@@ -79,11 +79,11 @@ def cargar_entrenamiento():
 # Valores y vectores propios de G = A @ A.T
 def calcular_eigenfaces(A):
     #Construye G = A @ A.T (2576 x 2576) y calcula sus valores y vectores propios con el metodo QR.
-    #Retorno: lambdas,eigenfaces, error, iteraciones, convergencia y tiuempo.
+    #Retorno: lambdas,eigenfaces, error, iteraciones, convergencia y tiempo.
     
     #Construccion de la matriz
     G = A @ A.T
-    print(f"  Tamano de A.T @ A: {G.shape}")
+    print(f"  Tamano de A @ A.T {G.shape}")
     print(f"  Ejecutando {METODO} con iterMax = {ITER_MAX} y tol = {TOL}...")
 
     #Llamada al metodo elegido
@@ -163,7 +163,7 @@ def guardar_figura_caras_base(eigenfaces, ruta):
     plt.close(fig)
 
 
-# Pasos 7-8: Proyeccion y calsificacion por vecino mas cercano
+# Pasos 7-8: Proyeccion y clasificacion por vecino mas cercano
 def predecir(Uk, media, S, etiquetas, rutas_entrenamiento):
     # Para cada imagen se prueba 
         # - vectorizar y centrar
