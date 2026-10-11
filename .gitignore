@@ -60,3 +60,17 @@ venv.bak/
 
 # Databases
 *.sqlite3
+
+# Archivos temporales y de salida de LaTeX
+*.aux
+*.bbl
+*.blg
+*.log
+*.out
+*.synctex.gz
+*.toc
+
+
+#  Resultados de texto y PDFs generados
+*.txt
+
