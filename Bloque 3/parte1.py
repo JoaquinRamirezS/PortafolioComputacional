@@ -69,6 +69,9 @@ def metodo_QR(A, iterMax, tol):
 
         # Actualiza B para la siguiente iteración
         B = C
+        # Monitoreo de progreso
+        if k % 100 == 0:
+            print(f"    [QR] iter {k:6d} | erk = {erk:.3e}")
 
         # Criterio de parada
         if erk < tol:
